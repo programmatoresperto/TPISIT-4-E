@@ -1,0 +1,80 @@
+/******************************************************************************
+
+Welcome to GDB Online.
+GDB online is an online compiler and debugger tool for C, C++, Python, Java, PHP, Ruby, Perl,
+C#, OCaml, VB, Swift, Pascal, Fortran, Haskell, Objective-C, Assembly, HTML, CSS, JS, SQLite, Prolog.
+Code, Compile, Run and Debug online from anywhere in world.
+
+*******************************************************************************/
+#include <stdio.h>
+#include <unistd.h>
+#include <sys/wait.h>
+#include <stdlib.h>
+#include <fcntl.h>
+#include <sys/types.h>
+
+void bubblesort(int v[], int n) {
+int i,k;
+int temp;
+for(i = 0; i<n-1; i++) {
+ for(k = 0; k<n-1-i; k++) {
+         if(v[k] > v[k+1]) {
+          temp = v[k];
+          v[k] = v[k+1];
+          v[k+1] = temp;
+         }
+ }
+}
+}
+
+
+int main()
+{
+    int fd1, fd2, p1p2[2], p2p0[2];
+    
+    pipe(p1p2);
+    
+    fd1 = fork();
+    
+    
+    if(fd1 == 0){
+        close(p1p2[0]);
+        int numeri1[5];
+        printf("Inserire 5 numeri\n");
+        for (int i = 0; i < 5; i++ ){
+            scanf("%d", &numeri1[i]);
+        }
+        write(p1p2[1], &numeri1, sizeof(numeri1));
+        exit(0);
+    }
+    
+    pipe(p2p0);
+    
+    fd2 = fork();
+    
+    if(fd2 == 0){
+        close(p1p2[1]);
+        close(p2p0[0]);
+        
+        int numeri2[5];
+        read(p1p2[0], (void *)&numeri2, sizeof(numeri2));
+        
+        bubblesort(numeri2, 5);
+        
+        write(p2p0[1], &numeri2, sizeof(numeri2));
+        exit(0);
+        
+    }
+    
+    int numeri3[5];
+    read(p2p0[0], (void *)&numeri3, sizeof(numeri3));
+    printf("I numeri ordinati\n");
+    for(int i=0; i<5; i++){
+        printf("%d", numeri3[i]);
+    }
+    
+    
+    wait(&fd1);
+    wait(&fd2);
+    return 0;
+}
